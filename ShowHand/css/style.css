@@ -1,0 +1,103 @@
+
+body {
+    min-width: 1000px;
+    padding-left: 200px;
+}
+
+.guest, .host {
+    margin-top: 10px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.guest {
+    color: dodgerblue;
+}
+
+.host {
+    color: orangered;
+}
+
+.guest img, .host img {
+    width: 50px;
+    height: 50px;
+    vertical-align: bottom;
+}
+
+.guestPokerWrap {
+    border: 1px solid dodgerblue;
+}
+
+.hostPokerWrap {
+    border: 1px solid orangered;
+}
+
+.guestPokerWrap, .hostPokerWrap {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 800px;
+    height: 200px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.poker img {
+    width: 110px;
+    height: 180px;
+    border: 5px solid white;
+    box-shadow: 2px 4px 8px 0 rgba(46, 61, 73, .3);
+    box-sizing: border-box;
+    transition: all .3s ease;
+}
+
+.poker img:hover {
+    box-shadow: 8px 8px 15px 0 rgba(46, 61, 73, .25)
+}
+
+.join {
+    position: absolute;
+    top: 420px;
+    left: 20px;
+    height: 120px;
+    cursor: pointer;
+}
+
+.join img {
+    height: 120px;
+    width: 120px;
+}
+
+.join:hover img {
+    transform: scale(1.05);
+    transition: all .1s linear;
+}
+
+.functionBar {
+    margin-top: 40px;
+}
+
+label[for=weiInput] {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#weiInput {
+    padding: 0 5px;
+    font-size: 16px;
+    outline: none;
+    height: 30px;
+    vertical-align: middle;
+}
+
+button {
+    width: 130px;
+    margin-left: 10px !important;
+    padding: 0 15px !important;
+    font-weight: bold !important;
+    vertical-align: middle;
+}
+
+i.icon-chouma {
+    font-size: 19px;
+}
