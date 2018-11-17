@@ -4,6 +4,10 @@ body {
     padding-left: 200px;
 }
 
+h1.roundTitle {
+    color: #ff0729;
+}
+
 .guest, .host {
     margin-top: 10px;
     font-size: 24px;
@@ -42,6 +46,9 @@ body {
     border-radius: 10px;
 }
 
+.poker {
+    cursor: pointer;
+}
 .poker img {
     width: 110px;
     height: 180px;
@@ -91,13 +98,13 @@ label[for=weiInput] {
 }
 
 button {
-    width: 130px;
+    width: 122px;
     margin-left: 10px !important;
     padding: 0 15px !important;
     font-weight: bold !important;
-    vertical-align: middle;
+    vertical-align: bottom !important;
 }
 
-i.icon-chouma {
+i.icon-chouma{
     font-size: 19px;
 }
