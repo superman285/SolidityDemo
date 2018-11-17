@@ -2,17 +2,14 @@ pragma solidity ^0.4.25;
 
 //构造函数
 //
+import {Console} from "./Console.sol";
 
 contract ShowHandDemo {
-
-    address private dealer; //平台方
-    bytes32 randSeed;   //随机种子
 
     uint public bringInBet; //最小底注额
     uint public minmalBet; //最小下注额
 
-    uint8 joinTurn;
-
+    address private dealer; //平台方
     address public hostPlayer;  //主位
     address public guestPlayer; //客位
     address public activePlayer; //说话的玩家，即应该行动的玩家
@@ -22,12 +19,13 @@ contract ShowHandDemo {
     mapping(address => uint) public totalBalance;    //玩家总下注金额
     mapping(address => uint) public roundBalance;    //玩家每一轮下注金额
     mapping(address => bool) public isPlayerActioned; //玩家是否下过注(包括底注)
+    mapping(address => bool) private passThisRound; //本轮是否过牌了，一轮最多过一次
 
-    // round 轮次
-    uint8 public round;
+    bytes32 randSeed;   //随机种子
+    uint8 joinRand; //区分加入方为主方或客方,做个随机处理
+    uint8 public round;     // round 轮次
 
-    // isGameFinished 游戏是否结束
-    bool public isGameFinished;
+    bool public isGameFinished;     // isGameFinished 游戏是否结束
 
     constructor() public{
         bringInBet = 100;
@@ -35,45 +33,47 @@ contract ShowHandDemo {
         round = 0;
         dealer = msg.sender;
         randSeed =  blockhash(block.number - 1);
-        emit OnGameCreated();
+        joinRand = uint8(keccak256(abi.encodePacked(now,msg.sender,block.number))) % 2;
     }
 
-    event OnPlayerJoined(address player);
+    modifier inGaming() {
+        require(round>0 && !isGameFinished,"轮次必须大于0且游戏未结束");
+        _;
+    }
+
+    modifier nowActived() {
+        require(msg.sender == activePlayer,"必须到你的回合才可以行动！");
+        _;
+    }
+
+    //加入游戏，主客随机而定
     function joinGame(address _joiner) public {
         require(round == 0, "轮次得从0开始");
         require(address(0) == hostPlayer || address(0) == guestPlayer, "已有两个玩家加入！");
 
-        if(joinTurn == 0){
+        if(joinRand==0){
+            require(guestPlayer != _joiner,"两方地址不能相同！");
             hostPlayer = _joiner;
-            joinTurn = 1;
-            emit OnPlayerJoined(hostPlayer);
+            joinRand = 1;
+            Console.log("hostPlayer",hostPlayer);
         }else {
             require(hostPlayer != _joiner,"两方地址不能相同！");
             guestPlayer = _joiner;
-            emit OnPlayerJoined(guestPlayer);
+            joinRand = 0;
+            Console.log("guestPlayer",guestPlayer);
         }
 
     }
 
-    function isAllPlayerActioned() private view returns (bool) {
-        return isPlayerActioned[hostPlayer] && isPlayerActioned[guestPlayer];
-    }
-    function dealPoker() private returns (uint8) {
-        randSeed = keccak256(abi.encodePacked(now,randSeed));
-        return uint8(randSeed)%52;
-        //有空了考虑下发牌重复的问题
-    }
-
     event OnPokerDealLight(address player,uint8 poker);
     event OnPokerDealDark(address player,uint8 poker);
-    event OnGameCreated();
 
-
+    //下底注功能
     function bringIn() public payable{
-        require(round == 0, "轮次得从0开始");
+        require(round == 0, "轮次必须为0");
         require(msg.sender == guestPlayer || msg.sender == hostPlayer,"你必须是参与的玩家！");
-        require(msg.value == bringInBet,"下底注必须为规定额");
-        require(totalBalance[msg.sender]==0,"你已经下过底注了！");
+        require(msg.value == bringInBet,"下底注必须等于规定额100！");
+        require(!isPlayerActioned[msg.sender],"你已经下过底注！");
 
         totalBalance[msg.sender] = msg.value;
         isPlayerActioned[msg.sender] = true;    //记得重置数据的地方
@@ -82,9 +82,10 @@ contract ShowHandDemo {
         if(isAllPlayerActioned()) {
             //发牌，先发暗牌，再发一张明牌
             pokers[hostPlayer][round] = dealPoker();
-            emit OnPokerDealDark(hostPlayer,pokers[hostPlayer][round]);
+            uint pokerhostRound = pokers[hostPlayer][round];
+            Console.log("darkhost",pokerhostRound);
             pokers[guestPlayer][round] = dealPoker();
-            emit OnPokerDealDark(hostPlayer,pokers[guestPlayer][round]);
+            //Console.log("darkg",pokers[guestPlayer][round]);
             round++;
 
             pokers[hostPlayer][round] = dealPoker();
@@ -96,10 +97,9 @@ contract ShowHandDemo {
         }
     }
 
-    function bet() public payable{
-        require(msg.value >= minmalBet,"下注额必须大于等于规定最小下注额");
-        require(msg.sender == activePlayer,"必须是到你说话你才可以下");
-        require(round>0 && !isGameFinished,"轮次大于0才可以下注，轮次等0时下底注，且游戏未结束");
+    //下注功能
+    function bet() public inGaming nowActived payable{
+        require(msg.value >= minmalBet,"下注额必须大于等于规定最小下注额100！");
         if(msg.sender == hostPlayer) {
             require(roundBalance[msg.sender]+msg.value >= roundBalance[guestPlayer],"下注额必须大于等于客方");
             //require(msg.value >= roundBalance[guestPlayer],"下注额必须大于等于客方");
@@ -114,33 +114,40 @@ contract ShowHandDemo {
 
         //下一步
         nextMove();
-
     }
 
+    //判断是否所有玩家都行动完毕
+    function isAllPlayerActioned() private view returns (bool) {
+        Console.log("isAllPlayerActionedStart",now);
+        return isPlayerActioned[hostPlayer] && isPlayerActioned[guestPlayer];
+    }
+
+    //发牌，返回牌序号
+    function dealPoker() private returns (uint8) {
+        Console.log("dealPokerStart",now);
+        randSeed = keccak256(abi.encodePacked(now,randSeed));
+        return uint8(randSeed)%52;
+        //有空考虑下发牌重复的问题
+    }
+
+    //下一个玩家
     function nextPlayer() private {
-//        require()
+        Console.log("nextPlayerStart",now);
         activePlayer = (activePlayer==hostPlayer)?guestPlayer:hostPlayer;
     }
 
+    //下一步行动
     function nextMove() private {
-        require(round>0,"轮次大于0");
+        require(round>0,"轮次需要大于0");
+        Console.log("nextMoveStart",now);
+
         if(!isAllPlayerActioned()){
+            Console.log("someone hasn't action",now);
             nextPlayer();
             return;
         }
 
-        if(round == 5) {
-            //游戏结束,选出winner
-            if(comparePokers(0,pokers[hostPlayer],pokers[guestPlayer])){
-                winner = hostPlayer;
-            } else {
-                winner = guestPlayer;
-            }
-            isGameFinished = true;
-            //记得退出
-            return;
-        }
-
+        Console.log("当前轮次为，接下来发牌",uint(round));
         pokers[hostPlayer][round] = dealPoker();
         emit OnPokerDealLight(hostPlayer,pokers[hostPlayer][round]);
 
@@ -148,42 +155,64 @@ contract ShowHandDemo {
         emit OnPokerDealLight(guestPlayer,pokers[guestPlayer][round]);
 
         nextRound();
+
+        if(round == 5) {
+            Console.log("终于结束，目前轮数为",uint(round));
+            //游戏结束,选出winner
+            if(comparePokers(0,pokers[hostPlayer],pokers[guestPlayer])){
+                winner = hostPlayer;
+                Console.log("hostWin",winner);
+            } else {
+                winner = guestPlayer;
+                Console.log("guestWin",winner);
+            }
+            isGameFinished = true;
+            return;
+        }
     }
 
+    //重置轮次数据
     function resetRoundData() private{
+        Console.log("resetRoundDataS",now);
+        //激活玩家置为空
         activePlayer = address(0);
+        //双方本轮金额置为0
         roundBalance[hostPlayer] = 0;
         roundBalance[guestPlayer] = 0;
-        isPlayerActioned[hostPlayer] = false;   //到最后一轮会有问题，要特殊处理下
+        //双方置为未行动
+        isPlayerActioned[hostPlayer] = false;
         isPlayerActioned[guestPlayer] = false;
+        //双方置为本轮未过牌
+        passThisRound[hostPlayer] = false;
+        passThisRound[guestPlayer] = false;
     }
 
+    //下一轮次
     function nextRound() private {
+        Console.log("nextRoundStart",now);
         round++;
         //重置轮次数据
         resetRoundData();
         //决定谁先行动
         determineActivePlayer();
     }
-    function determineActivePlayer() private{
-        //此处比较的是明牌开始的总值，不是当前牌的大小？
-        /*if(comparePokers(1,pokers[hostPlayer],pokers[guestPlayer])) {
-            activePlayer = hostPlayer;
-        }else {
-            activePlayer = guestPlayer;
-        }*/
 
-        //根据当前牌的大小来决定谁下次先动
+    //决定下一个行动玩家
+    function determineActivePlayer() private inGaming{
+        Console.log("determineActivePlayerStart",now);
+        //根据当前牌面大小决定谁下次先动
         if(pokers[hostPlayer][round-1]>=pokers[guestPlayer][round-1]) {
             activePlayer = hostPlayer;
+            Console.log("determineNowHost",activePlayer);
         }else {
             activePlayer = guestPlayer;
+            Console.log("determineNowGuest",activePlayer);
         }
-
     }
 
-    //
+    //比较所有牌大小
     function comparePokers(uint8 _start,uint8[5] _hostPokers,uint8[5] _guestPokers) private pure returns (bool) {
+        //Console.log("compareBigSmall",now);
         uint8 hostSum = 0;
         uint8 guestSum = 0;
         for(uint i = _start;i < 5;i++) {
@@ -193,22 +222,19 @@ contract ShowHandDemo {
         return hostSum >= guestSum;     //相同也视为主方赢
     }
 
-    function withDraw() public payable{
+    //提现
+    function withDraw() public inGaming payable{
         require(winner == msg.sender,"胜者才可以提现");
         require(isGameFinished,"游戏得结束才可提现");
-
+        require(address(this).balance>0,"胜方已经提现了！");
         uint total = totalBalance[hostPlayer] + totalBalance[guestPlayer];
-
         winner.transfer(total * 9 / 10);
-
         //平台方抽水10%
         dealer.transfer(total / 10);
     }
 
     //弃牌
-    function fold() public {
-        require(round>0 && !isGameFinished,"轮次大于0，且游戏未结束");
-        require(msg.sender == activePlayer,"必须是当前行动玩家才能弃");
+    function fold() public inGaming nowActived{
 
         //切换到下个玩家，并把下个玩家设为赢家
         nextPlayer();
@@ -217,10 +243,10 @@ contract ShowHandDemo {
     }
 
     //过牌
-    function pass() public {
-        require(round>0 && !isGameFinished,"过牌需要轮次大于0，且游戏未结束");
-        require(msg.sender == activePlayer,"必须是当前行动玩家才能弃");
+    function pass() public inGaming nowActived{
         require(roundBalance[hostPlayer]==roundBalance[guestPlayer],"本轮下注额相等才能过牌");//其实就是下注额都是0的时候才能过
+        require(!passThisRound[msg.sender],"本轮你不可以再次过牌！");
+        passThisRound[msg.sender] = true;
 
         nextMove();
     }
