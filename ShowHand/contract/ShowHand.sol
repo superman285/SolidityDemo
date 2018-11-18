@@ -118,7 +118,7 @@ contract ShowHandDemo {
 
     //判断是否所有玩家都行动完毕
     function isAllPlayerActioned() private view returns (bool) {
-        Console.log("isAllPlayerActionedStart",now);
+        //Console.log("isAllPlayerActionedStart",now);
         return isPlayerActioned[hostPlayer] && isPlayerActioned[guestPlayer];
     }
 
@@ -257,7 +257,7 @@ contract ShowHandDemo {
     }
 
     //显示玩家牌
-    function getPlayerPoker(uint8 pos) public view returns(uint8 hostShow,uint8 guestShow){
+    function getPlayerPoker(uint8 pos) public view returns (uint8 hostShow,uint8 guestShow){
 
         if(pos==0 || pos>=round){
             hostShow = 55;
@@ -266,6 +266,7 @@ contract ShowHandDemo {
         }
         hostShow = pokers[hostPlayer][pos];
         guestShow = pokers[guestPlayer][pos];
+
     }
 
     function getRoundBalance() public view returns (uint) {
