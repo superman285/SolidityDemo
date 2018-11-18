@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <h1 class="roundTitle">第<span class="roundNum">N</span>轮</h1>
+    <h1 class="roundTitle">第<span class="roundNum">1</span>轮</h1>
 
     <div class="guest">
         <img src="img/head5.jpeg" alt="">
@@ -58,37 +58,734 @@
         <img src="img/join.png" alt="">
     </div>
 
+    <button class="myUser button button-3d button-pill">查看我的角色</button>
+
+    <div class="popModal">
+        <h3>请输入账户地址</h3>
+        <hr>
+        <input type="text" class="addrInput">
+        <hr>
+        <button class="ensureModal button button-primary button-rounded">确定</button>
+        <button class="unsureModal button button-rounded">取消</button>
+    </div>
+
     <div class="functionBar">
         <label for="weiInput"><input type="text" placeholder="请输入金额" id="weiInput"> wei</label>
+        <button class="button button-3d roundbalance">我的本轮下注额</button>
         <br>
         <br>
-        <button class="button button-3d button-pill" style="margin-left: 0px!important;">
+        <button class="button button-3d button-pill bringInBtn" style="margin-left: 0px!important;">
             <i class="iconfont icon-chouma1"></i>
             下底注
         </button>
-        <button class="button button-3d button-primary">
+        <button class="button button-3d button-primary betBtn">
             <i class="iconfont icon-chouma"></i>
             下注
         </button>
-        <button class="check button button-3d button-inverse">
+        <button class="check button button-3d button-inverse passBtn">
             <i class="iconfont icon-skip"></i>
             过牌
         </button>
-        <button class="fold button button-3d button-caution">
+        <button class="fold button button-3d button-caution foldBtn">
             <i class="iconfont icon-fangqi"></i>
             弃牌
         </button>
 
-        <button class="button button-3d button-action">
+        <button class="button button-3d button-action showActiveBtn">
             <i class="iconfont icon-shenqingfayan"></i>
             该谁说话
         </button>
-        <button class="button button-3d button-royal">
+        <button class="button button-3d button-royal winnerBtn">
             <i class="iconfont icon-lottery_winner"></i>
             查看赢家
         </button>
     </div>
 
+    <script src="js/web3.js"></script>
+    <script>
+        //绑定界面元素
+        var roundNum = document.querySelector(".roundNum");
+        var joinBtn = document.querySelector(".join");
+        var ensureBtn = document.querySelector(".ensureModal"),
+            unsureBtn = document.querySelector(".unsureModal");
+        var popupModal = document.querySelector(".popModal");
+        var addrInput = document.querySelector(".addrInput");
+
+        var guestUser = document.querySelector(".guest"),
+            hostUser = document.querySelector(".host");
+        var ethInput = document.querySelector("#weiInput"),
+            bringInBtn = document.querySelector(".bringInBtn"),
+            betBtn = document.querySelector(".betBtn"),
+            passBtn = document.querySelector(".passBtn"),
+            foldBtn = document.querySelector(".foldBtn"),
+            showActiveBtn = document.querySelector(".showActiveBtn"),
+            winnerBtn = document.querySelector(".winnerBtn");
+
+        var roundBalanceBtn = document.querySelector(".roundbalance");
+
+        var hostPokerWrap = document.querySelector(".hostPokerWrap"),
+            guestPokerWrap = document.querySelector(".guestPokerWrap");
+
+        var hostPokers = hostPokerWrap.getElementsByClassName("poker"),
+            guestPokers = guestPokerWrap.getElementsByClassName("poker");
+
+        var hostPokerImg = [],
+            guestPokerImg = [];
+
+        var myUserBtn = document.querySelector(".myUser");
+
+        var joinFlag = false;
+
+        for (let i = 0; i < hostPokers.length; i++) {
+            hostPokerImg[i] = hostPokers[i].querySelector("img");
+            guestPokerImg[i] = guestPokers[i].querySelector("img");
+        }
+
+
+        //构造web3对象
+        /*if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
+        }*/
+        var web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
+        web3.eth.getAccounts(function (err, result) {
+            console.log(`web3获取账户:${result}`);
+        });
+        //remix获取abi
+        var abi = [
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "bringIn",
+                "outputs": [],
+                "payable": true,
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "minmalBet",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "withDraw",
+                "outputs": [],
+                "payable": true,
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "bet",
+                "outputs": [],
+                "payable": true,
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "isPlayerActioned",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "round",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint8"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "getPocket",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint8"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "name": "_joiner",
+                        "type": "address"
+                    }
+                ],
+                "name": "joinGame",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "pos",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "getPlayerPoker",
+                "outputs": [
+                    {
+                        "name": "hostShow",
+                        "type": "uint8"
+                    },
+                    {
+                        "name": "guestShow",
+                        "type": "uint8"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "roundBalance",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "totalBalance",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "activePlayer",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "hostPlayer",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "pass",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    },
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "pokers",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint8"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "winner",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "guestPlayer",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "fold",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "bringInBet",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "getRoundBalance",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "isGameFinished",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "name": "player",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "name": "poker",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "OnPokerDealLight",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "name": "player",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "name": "poker",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "OnPokerDealDark",
+                "type": "event"
+            }
+        ];
+        //remix获取合约地址
+        var contractAddr = "0xdfd0cf550b65835f2bf44a64a8417513334b4267";
+        //构造合约实例
+        var showhandContract = new web3.eth.Contract(abi,contractAddr);
+        console.log("合约实例如下：");
+        console.log(showhandContract);
+
+
+        alert("请先点击左侧按钮加入游戏！");
+
+        //功能相关
+        var accountAddr = '0';
+        var hostAddr,guestAddr;
+        function getHostPlayer() {
+            showhandContract.methods.hostPlayer().call(function (err, result) {
+                if (!err) {
+                    hostAddr = result;
+                }
+            });
+        }
+        function getGuestPlayer() {
+            showhandContract.methods.guestPlayer().call(function (err, result) {
+                if (!err) {
+                    guestAddr = result;
+                }
+            });
+        }
+        var round = 0;
+        var roundBalance = 0;
+
+
+        function getRound() {
+            showhandContract.methods.round().call(function (err,result) {
+                round = result;
+            });
+        }
+
+        function getRoundBalance() {
+            showhandContract.methods.getRoundBalance().call({
+                from: accountAddr
+            },function (err,result){
+                roundBalance = result;
+            });
+        }
+
+        //joinGame
+        joinBtn.onclick = function () {
+            popupModal.classList.add("shown");
+        }
+        unsureBtn.onclick = function () {
+            popupModal.classList.remove("shown");
+        }
+        ensureBtn.onclick = function () {
+            accountAddr = addrInput.value;
+            console.log(`获取的地址${accountAddr}`);
+            console.log(web3.utils.isAddress(accountAddr));
+
+            showhandContract.methods.joinGame(accountAddr).send({
+                from: accountAddr,
+                gas: 300000
+            },function (err,result) {
+                if(!err) {
+                    alert("加入成功！");
+                    console.log("获取主人地址");
+
+                    popupModal.classList.remove("shown");
+                }else {
+                    console.log(accountAddr);
+                    alert("加入失败！")
+                    console.log(err);
+                }
+            });
+            getHostPlayer();
+            getGuestPlayer();
+            myUserBtn.style.display = "block";
+            setTimeout(function(){alert("请点击左侧查看我的角色按钮确认我方角色！");},1000);
+        };
+
+        myUserBtn.onclick = function () {
+            getHostPlayer();
+            getGuestPlayer();
+            setTimeout(function(){console.log('hostAddr:'+hostAddr);
+                console.log('guestAddr'+guestAddr);
+                console.log('accAddr'+accountAddr);
+                if(accountAddr==0){
+                    alert('请先加入游戏！');
+                }else {
+                    if (hostAddr.toLowerCase() == accountAddr.toLowerCase()) {
+                        console.log('我是主');
+                        hostUser.style.borderColor = "red";
+                    } else {
+                        console.log('我是客');
+                        guestUser.style.borderColor = 'red';
+                    }
+                }},1000);
+
+        };
+
+        roundBalanceBtn.onclick = function() {
+            // if(accountAddr==0){
+            //     alert('先加入游戏吧！');
+            // }else{
+            getRound();
+            setTimeout(function(){console.log(round)},100);
+
+            getRoundBalance();
+            setTimeout(function(){
+                alert("我的本轮下注额为:"+roundBalance);
+            },500);
+            //}
+        }
+
+
+        bringInBtn.onclick = function () {
+            console.log(showhandContract.methods);
+            showhandContract.methods.bringIn().send({
+                from: accountAddr,
+                value: 100,
+                gas: 300000
+            },function (err,result) {
+                if(!err) {
+                    alert("下底注成功！");
+                }else {
+                    console.log(accountAddr);
+                    alert("下底注失败！");
+                    console.log(err);
+                }
+            });
+            getRound();
+            setTimeout(function(){
+                console.log('回合数为:'+round);
+                roundNum.innerHTML = parseInt(round)+2;
+            },500)
+
+        };
+
+        //显示玩家的明牌
+        function showOpenPoker(pokerNum) {
+            showhandContract.methods.getPlayerPoker(pokerNum).call(function(err,result){
+                //从合约的函数返回值获得结果
+                var hostShow = result.hostShow;
+                var guestShow = result.guestShow;
+
+                hostPokerImg[pokerNum].src = "img/" +hostShow +".png";
+                hostPokerImg[pokerNum].title = hostShow;
+
+                guestPokerImg[pokerNum].src = "img/" +guestShow +".png";
+                guestPokerImg[pokerNum].title = guestShow;
+
+            });
+        }
+        //显示暗牌
+        function showDarkPoker() {
+            getHostPlayer();
+            getGuestPlayer();
+
+            setTimeout(function(){
+                console.log('hostAddr:'+hostAddr);
+                console.log('accAddr'+accountAddr);
+                showhandContract.methods.getPocket().call({
+                    from: accountAddr,
+                },function (err,result) {
+                    //需要做下小写处理
+                    var owncard = result;
+                    if(hostAddr.toLowerCase() == accountAddr.toLowerCase()){
+                        hostPokerImg[0].src = "img/" +owncard +".png";
+                        hostPokerImg[0].title = owncard;
+                    }else {
+                        guestPokerImg[0].src = "img/" +owncard +".png";
+                        guestPokerImg[0].title = owncard;
+                    }
+                });
+            },500)
+
+        }
+
+        //显示牌面
+        for (let i = 1; i < hostPokers.length; i++) {
+            hostPokerImg[i].index = i;
+            hostPokerImg[i].onclick = function () {
+                showOpenPoker(this.index);
+            }
+            guestPokerImg[i].onclick = function() {
+                showOpenPoker(this.index);
+            }
+        }
+        for (let i = 1; i < guestPokerImg.length; i++) {
+            guestPokerImg[i].index = i;
+            guestPokerImg[i].onclick = function() {
+                showOpenPoker(this.index);
+            }
+        }
+
+        hostPokerImg[0].onclick = function(){
+            showDarkPoker();
+        }
+        guestPokerImg[0].onclick = function () {
+            showDarkPoker();
+        }
+
+        //下注
+        betBtn.onclick = function () {
+            var amount = ethInput.value;
+            showhandContract.methods.bet().send({
+                from: accountAddr,
+                value: amount,
+                gas: 300000
+            },function(err,result){
+                if(!err){
+                    alert("下注成功！");
+                }else {
+                    alert('下注失败！');
+                }
+            });
+            getRound();
+            setTimeout(function(){
+                console.log('回合数为:'+round);
+                roundNum.innerHTML = parseInt(round)+1;
+            },500)
+        }
+
+        //过牌
+        passBtn.onclick = function (){
+
+            showhandContract.methods.pass().send({
+                from: accountAddr,
+                gas: 300000
+            },function(err,result){
+                if(!err){
+                    alert("过牌成功！");
+                }else {
+                    alert('过牌失败！');
+                }
+            });
+        }
+
+        //弃牌
+        foldBtn.onclick = function (){
+            showhandContract.methods.fold().send({
+                from: accountAddr,
+                gas: 300000
+            },function(err,result){
+                if(!err){
+                    alert("弃牌成功！");
+                }else {
+                    alert('弃牌失败！');
+                }
+            });
+        }
+
+        //查看激活玩家
+        showActiveBtn.onclick = function () {
+            getHostPlayer();
+            getGuestPlayer();
+
+            showhandContract.methods.activePlayer().call(function(err,result){
+                if(hostAddr.toLowerCase()==result.toLowerCase()){
+                    alert("轮到HostPlayer了!\n地址:"+result);
+                }else if(guestAddr.toLowerCase()==result.toLowerCase()){
+                    alert("轮到GuestPlayer了!\n地址:"+result);
+                }
+                console.log("该谁说话：");
+                console.log(result);
+            });
+
+        }
+
+        //获取赢家
+        winnerBtn.onclick = function () {
+            getHostPlayer();
+            getGuestPlayer();
+
+            showhandContract.methods.winner().call(function(err,result){
+                if(hostAddr.toLowerCase()==result.toLowerCase()){
+                    alert("赢家为HostPlayer!\n地址为:"+result);
+                }else if(guestAddr.toLowerCase()==result.toLowerCase()){
+                    alert("赢家为GuestPlayer!\n地址为:"+result);
+                }
+
+                console.log("赢家：");
+                console.log(result);
+            });
+        }
+
+
+
+
+    </script>
 
 </body>
 </html>
