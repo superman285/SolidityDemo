@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>众筹电影购票</title>
+    <link rel="stylesheet" href="css/buttons.css">
+    <script src="js/web3.js"></script>
+    <script src="js/abi.js"></script>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: row;
+            padding-top: 30px;
+        }
+        .left {
+            flex: 1;
+            text-align: center;
+        }
+        .right {
+            flex: 1;
+        }
+        .right h1 {
+            padding-left: 60px;
+            margin-top: 60px;
+        }
+        img {
+            width: 400px;
+            height: 600px;
+            box-shadow: 0 0 8px 3px grey;
+            transition: all .2s;
+        }
+        img:hover {
+            transform: scale(1.01);
+        }
+        .left button{
+            font-weight: 500!important;
+            margin-top: 20px!important;
+        }
+    </style>
+</head>
+<body>
+<div class="left">
+    <img src="img/timg.jpeg" alt="电影海报">
+    <br>
+    <button class="button button-glow button-border button-rounded button-caution">我要购票</button>
+</div>
+
+
+<div class="right">
+    <h1>电影名称：狂潮影品</h1>
+    <h1>电影票价：0.02ETH</h1>
+</div>
+
+<script src="js/sell.js"></script>
+
+
+</body>
+</html>
