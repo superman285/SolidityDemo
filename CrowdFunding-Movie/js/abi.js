@@ -508,9 +508,9 @@ var controller_abi = [
     }
 ];
 
-var kccContractAddr = "0x9a49f6a26f78d7f402bdb75bf5e9707bb12e98bf";
-var mvcContractAddr = "0x8acbfc753c55349cb120b3e57646abaec8b408d3";
-var controllerContractAddr = "0x7c42939c03fc33bb7475d691f090d083c86b5a6c";
+var kccContractAddr = "0x9f5dd7885f08cf3d7a4638e329de23002a578c00";
+var mvcContractAddr = "0x9a49f6a26f78d7f402bdb75bf5e9707bb12e98bf";
+var controllerContractAddr = "0xfab5e6a306abc8b71ff98727a6f216fbd2ead4fc";
 
 
 var kccContractObj = new web3.eth.Contract(kccToken_abi,kccContractAddr);
