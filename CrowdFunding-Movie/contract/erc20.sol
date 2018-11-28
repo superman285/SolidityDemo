@@ -4,9 +4,9 @@ contract ERC20 {
 
     //function totalSupply() public view returns (uint);
 
-    //function balanceOf(address _owner) public view returns (uint balance);
+    function balanceOf(address _owner) public view returns (uint balance);
 
-    function transfer(address _to, uint _value) public view returns (bool success);
+    function transfer(address _to, uint _value) public returns (bool success);
 
     function transferFrom(address _from, address _to, uint _value) public returns (bool success);
 

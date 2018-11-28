@@ -52,7 +52,7 @@
             transform: translate(-50%);
             width: 450px;
             height: 300px;
-            padding: 0px 30px;
+            padding: 0 30px;
             border-radius: 10px;
             box-shadow: 0 0 10px 4px white;
             background: rgba(0,0,0,.85);
@@ -91,14 +91,14 @@
 <div class="left">
     <img src="img/timg.jpeg" alt="电影海报">
     <br>
-    <input type="text" class="rechargeInput">
+    <input type="text" class="rechargeInput" title="">
     <button class="rechargeBtn button button-glow button-border button-rounded button-caution">确认充值</button>
     <button class="rechargeTarget button button-glow button-border button-rounded button-caution">充值对象</button>
 
     <br>
-    <input type="text" class="voteInput">
+    <input type="text" class="voteInput" title="">
     <button class="voteBtn button button-glow button-border button-rounded button-primary">投票支持</button>
-    <button class="button button-glow button-border button-rounded button-primary">刷新数据</button>
+    <button class="refresh button button-glow button-border button-rounded button-primary">刷新数据</button>
 </div>
 
 
@@ -106,14 +106,14 @@
     <h1>电影名称：<span class="movieName"></span></h1>
     <h1>持有份额：<span class="holdingShare"></span></h1>
     <h1>MVC数量：<span class="mvcAmount"></span></h1>
-    <h1>KCC余额：<span class="kccAmount"></span></h1>
+    <h1>KCC余额：<span class="kccBalance"></span></h1>
     <h1>投票时间：<span class="voteTime"></span></h1>
 </div>
 
 <div class="popModal">
     <h3>请输入账户地址</h3>
     <hr>
-    <input type="text" class="addrInput">
+    <input type="text" class="addrInput" title="">
     <hr>
     <button class="ensureModal button button-primary button-rounded">确定</button>
     <button class="unsureModal button button-rounded">取消</button>

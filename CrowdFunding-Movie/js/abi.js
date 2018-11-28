@@ -17,7 +17,12 @@ var kccToken_abi = [
             }
         ],
         "name": "airDrop",
-        "outputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
@@ -118,7 +123,7 @@ var kccToken_abi = [
         "constant": true,
         "inputs": [
             {
-                "name": "_owner",
+                "name": "_who",
                 "type": "address"
             }
         ],
@@ -186,25 +191,6 @@ var kccToken_abi = [
         "outputs": [
             {
                 "name": "remaining",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "balance",
-        "outputs": [
-            {
-                "name": "",
                 "type": "uint256"
             }
         ],
@@ -456,6 +442,24 @@ var mvcCrowd_abi = [
 
 var controller_abi = [
     {
+        "constant": true,
+        "inputs": [],
+        "name": "getAddr",
+        "outputs": [
+            {
+                "name": "kccAddr",
+                "type": "address"
+            },
+            {
+                "name": "mvcAddr",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "constant": false,
         "inputs": [
             {
@@ -487,30 +491,12 @@ var controller_abi = [
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "constructor"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "getAddr",
-        "outputs": [
-            {
-                "name": "kccAddr",
-                "type": "address"
-            },
-            {
-                "name": "mvcAddr",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
     }
 ];
 
-var kccContractAddr = "0x9f5dd7885f08cf3d7a4638e329de23002a578c00";
-var mvcContractAddr = "0x9a49f6a26f78d7f402bdb75bf5e9707bb12e98bf";
-var controllerContractAddr = "0xfab5e6a306abc8b71ff98727a6f216fbd2ead4fc";
+var kccContractAddr = "0xfab5e6a306abc8b71ff98727a6f216fbd2ead4fc";
+var mvcContractAddr = "0x9f5dd7885f08cf3d7a4638e329de23002a578c00";
+var controllerContractAddr = "0x47cfaeeda8c9e483c4fd87b3de4fb97b5ac2485a";
 
 
 var kccContractObj = new web3.eth.Contract(kccToken_abi,kccContractAddr);

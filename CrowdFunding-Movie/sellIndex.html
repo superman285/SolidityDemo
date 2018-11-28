@@ -37,19 +37,68 @@
             font-weight: 500!important;
             margin-top: 20px!important;
         }
+        .popModal{
+            position: absolute;
+            top: 200px;
+            left: -450px;
+            transform: translate(-50%);
+            width: 450px;
+            height: 300px;
+            padding: 0 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px 4px white;
+            background: rgba(0,0,0,.85);
+            overflow: hidden;
+            transition: all .4s linear;
+        }
+        .popModal.shown {
+            left: 50%;
+        }
+        .popModal h3 {
+            color: #FFFFFF;
+        }
+        .popModal input {
+            outline: none;
+            height: 34px;
+            width: 100%;
+            margin-top: 50px;
+            padding:0 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .popModal hr:nth-child(4) {
+            margin-top: 70px;
+        }
+        .popModal button {
+            float: right;
+            height: 35px!important;
+            padding: 0 30px!important;
+            margin-left: 10px;
+            margin-top: 10px!important;
+            line-height: 35px!important;
+        }
     </style>
 </head>
 <body>
 <div class="left">
     <img src="img/timg.jpeg" alt="电影海报">
     <br>
-    <button class="button button-glow button-border button-rounded button-caution">我要购票</button>
+    <button class="buyTicket button button-glow button-border button-rounded button-caution">我要购票</button>
 </div>
 
 
 <div class="right">
     <h1>电影名称：狂潮影品</h1>
     <h1>电影票价：0.02ETH</h1>
+</div>
+
+<div class="popModal">
+    <h3>请输入账户地址</h3>
+    <hr>
+    <input type="text" class="addrInput">
+    <hr>
+    <button class="ensureModal button button-primary button-rounded">确定</button>
+    <button class="unsureModal button button-rounded">取消</button>
 </div>
 
 <script src="js/sell.js"></script>
