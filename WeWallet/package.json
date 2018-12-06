@@ -1,0 +1,10 @@
+{
+  "name": "WeWallet",
+  "version": "1.0.0",
+  "dependencies": {
+    "ethereumjs-util": "latest",
+    "ethereumjs-wallet": "latest",
+    "bip39": "latest",
+    "async": "latest"
+  }
+}
