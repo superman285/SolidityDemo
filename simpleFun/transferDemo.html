@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+
+    <style>
+        .input-group {
+            width: 75%;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+    </style>
+
+</head>
+<body>
+
+
+<div class="input-group mb-3">
+    <input type="text" aria-label="First name" class="form-control transInput" placeholder="请输入金额">
+    <div class="input-group-prepend">
+        <span class="input-group-text">$ to</span>
+    </div>
+    <input type="text" aria-label="Last name" class="form-control transTarget" placeholder="请输入目标地址">
+    <div class="input-group-append">
+        <button class="btn btn-info transBtn" type="button" id="button-addon1">转账</button>
+    </div>
+</div>
+
+<div class="input-group mb-3">
+    <input type="text" aria-label="First name" class="form-control balShow" value="查看余额" readonly>
+    <div class="input-group-prepend">
+        <span class="input-group-text">$ from</span>
+    </div>
+    <input type="text" aria-label="Last name" class="form-control balFrom" placeholder="请输入查询地址">
+    <div class="input-group-append">
+        <button class="btn btn-info balBtn" type="button" id="button-addon2">查余额</button>
+    </div>
+</div>
+
+<script src="web3.js"></script>
+<script>
+
+    var async = require('async');
+
+    var transInput = document.getElementsByClassName("transInput")[0],
+        transTarget = document.getElementsByClassName("transTarget")[0],
+        transBtn = document.getElementsByClassName("transBtn")[0],
+        balShow = document.getElementsByClassName("balShow")[0],
+        balFrom = document.getElementsByClassName("balFrom")[0],
+        balBtn = document.getElementsByClassName("balBtn")[0];
+
+    var myt_abi = [
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_spender",
+                    "type": "address"
+                },
+                {
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "approve",
+            "outputs": [
+                {
+                    "name": "success",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_from",
+                    "type": "address"
+                },
+                {
+                    "name": "_to",
+                    "type": "address"
+                },
+                {
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferFrom",
+            "outputs": [
+                {
+                    "name": "success",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "foundation",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_who",
+                    "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_to",
+                    "type": "address"
+                },
+                {
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transfer",
+            "outputs": [
+                {
+                    "name": "success",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_owner",
+                    "type": "address"
+                },
+                {
+                    "name": "_spender",
+                    "type": "address"
+                }
+            ],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "name": "remaining",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "_from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "name": "_to",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Transfer",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "_owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "name": "_spender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Approval",
+            "type": "event"
+        }
+    ];
+    var myt_addr = "0x47cfaeeda8c9e483c4fd87b3de4fb97b5ac2485a";
+
+    var web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
+    var mytContractObj = new web3.eth.Contract(myt_abi, myt_addr);
+
+    var foundation;
+
+    function getFoundation() {
+        mytContractObj.methods.foundation().call(function (err, result) {
+            foundation = result;
+        });
+        return foundation;
+    }
+
+    foundation = getFoundation();
+
+
+    var addrCorrect = false;
+
+    function verifyAddr(addrStr) {
+        if (!web3.utils.isAddress(addrStr)) {
+            console.log(web3.utils.isAddress(addrStr.toString()));
+            return false;
+        }
+        //判断账户类型是否是合约账户
+        else {
+            return true;
+        }
+    }
+
+
+    transBtn.onclick = function () {
+        if (isNaN(transInput.value) || !transInput.value) {
+            console.log(transInput.value);
+            alert("请正确输入金额！");
+            return;
+        }
+        if (!verifyAddr(transTarget.value)) {
+            console.log(verifyAddr(transTarget.value));
+            alert("地址不符合要求！");
+        }else {
+            web3.eth.getCode(transTarget.value, function (err, result) {
+                if (!err) {
+                    var code = result;
+                    console.log("代码:" + code);
+                    if (code != "0x0") {
+                        console.log("代码不为空");
+                        console.log(code);
+                        addrCorrect = false;
+                    } else {
+                        addrCorrect = true;
+                    }
+
+                } else {
+                    console.log("错误:" + err);
+                }
+            }).then(function () {
+                if (addrCorrect == false) {
+                    alert("地址不符合要求！");
+                    return;
+                } else {
+                    mytContractObj.methods.transfer(transTarget.value, transInput.value).send({
+                        from: foundation,
+                        gas: 300000
+                    }, function (err, result) {
+                        if (!err) {
+                            console.log("结果:" + result);
+                            console.log("transfer done!");
+                            alert("转账成功");
+                        } else {
+                            console.log("transfer failed!");
+                            alert("转账失败");
+                        }
+                    });
+                }
+            })
+        }
+    };
+
+    balBtn.onclick = function () {
+        balShow.value = "查看余额";
+        if (!verifyAddr(balFrom.value)) {
+            console.log(verifyAddr(balFrom.value));
+            alert("地址不符合要求！");
+        }
+        else {
+            web3.eth.getCode(balFrom.value, function (err, result) {
+                if (!err) {
+                    var code = result;
+                    console.log("代码:" + code);
+                    if (code != "0x0") {
+                        console.log("代码不为空");
+                        console.log(code);
+                        addrCorrect = false;
+                    } else {
+                        addrCorrect = true;
+                    }
+
+                } else {
+                    console.log("错误:" + err);
+                }
+            }).then(function () {
+                if (addrCorrect == false) {
+                    alert("地址不符合要求！");
+                    return;
+                } else {
+                    mytContractObj.methods.balanceOf(balFrom.value).call(function (err, result) {
+                        console.log(result);
+                        balShow.value = result;
+                    });
+                }
+            })
+        }
+
+
+    }
+
+
+</script>
+
+</body>
+</html>
