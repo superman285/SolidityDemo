@@ -1,4 +1,3 @@
-
 //绑定界面元素
 var joinBtn = document.querySelector(".join");
 var ensureBtn = document.querySelector(".ensureModal"),
