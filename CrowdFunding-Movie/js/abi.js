@@ -3,6 +3,9 @@ web3.eth.getAccounts(function (err,result) {
     console.log(err,result);
 });
 
+
+
+
 var kccToken_abi = [
     {
         "constant": false,

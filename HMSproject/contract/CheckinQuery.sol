@@ -5,6 +5,7 @@ import "./Register.sol";
 
 contract CheckinQuery {
 
+    Register regi_instance = new Register();
 
     function checkIn(uint _customerID) public view returns(bool) {
         return !getCrimeInfo(_customerID);
