@@ -1,42 +1,52 @@
 pragma solidity >=0.4.22 <0.6.0;
 
-contract Register {
+contract InfoManagement {
 
     struct CustomerInfo {
         string customerName;
         uint customerID;    //从0开始
         uint customerAge;
-        bool isCrime;
+        bool criminalRecord;
     }
 
     CustomerInfo[] customers;
     mapping(uint=>uint) customerAges;
-    mapping(uint=>bool) customerIsCrimes;
+    mapping(uint=>bool) customerCriminalRecords;
+
+    address public Administrator;
 
     constructor() public {
+
+        Administrator = msg.sender;
 
         CustomerInfo memory hotelAdmin = CustomerInfo({
             customerName:"Administrator",
             customerID:customers.length,
             customerAge:666,
-            isCrime:false});
+            criminalRecord:false});
 
         customerAges[0] = 666;
-        customerIsCrimes[0] = false;
+        customerCriminalRecords[0] = false;
         customers.push(hotelAdmin);
 
     }
 
-    function registerInfo(string memory _customerName,uint _customerAge,bool _isCrime) public {
+    modifier onlyAdmin() {
+        require(msg.sender==Administrator,"管理员才有权限操作");
+        _;
+    }
+
+    //录入信息
+    function entryInfo(string memory _customerName,uint _customerAge,bool _criminalRecord) public onlyAdmin {
 
         customerAges[customers.length] = _customerAge;
-        customerIsCrimes[customers.length] = _isCrime;
+        customerCriminalRecords[customers.length] = _criminalRecord;
 
         CustomerInfo memory newguest = CustomerInfo({
             customerName: _customerName,
             customerID: customers.length,
             customerAge: _customerAge,
-            isCrime: _isCrime});
+            criminalRecord: _criminalRecord});
         customers.push(newguest);
     }
 
@@ -44,15 +54,15 @@ contract Register {
         return (customers[_customerID].customerID,
         customers[_customerID].customerName,
         customers[_customerID].customerAge,
-        customers[_customerID].isCrime);
+        customers[_customerID].criminalRecord);
     }
 
     function getAgeInfo(uint _customerID) public view returns(uint){
         return customerAges[_customerID];
     }
 
-    function getCrimeInfo(uint _customerID) public view returns(bool) {
-        return customerIsCrimes[_customerID];
+    function getCriminalRecordInfo(uint _customerID) public view returns(bool) {
+        return customerCriminalRecords[_customerID];
     }
 
     function getCustomerNum() public view returns(uint) {
