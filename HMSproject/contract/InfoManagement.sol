@@ -1,4 +1,5 @@
 pragma solidity >=0.4.22 < 0.6.0;
+//pragma experimental ABIEncoderV2;
 
 contract InfoManagement {
 
@@ -14,6 +15,9 @@ contract InfoManagement {
     mapping(uint => CustomerInfo) customerInfoMap;
     //客户编号id array
     CustomerInfo[] customerInfoArr;
+    
+    //customerIDs arrays
+    uint[] customerIDs;
 
     //客户年龄map
     mapping(uint => uint) customerAges;
@@ -35,6 +39,7 @@ contract InfoManagement {
 
         customerInfoMap[101] = admin;
         customerInfoArr.push(admin);
+        customerIDs.push(101);
         customerAges[101] = 666;
         customerCriminalRecords[101] = false;
 
@@ -43,6 +48,10 @@ contract InfoManagement {
     modifier onlyAdmin() {
         require(msg.sender == Administrator, "管理员才有权限操作");
         _;
+    }
+    
+    function getCustomerIDs() public view returns(uint[] memory){
+        return customerIDs;
     }
 
     //录入信息
@@ -56,6 +65,7 @@ contract InfoManagement {
 
         customerInfoMap[_customerID] = newcustom;
         customerInfoArr.push(newcustom);
+        customerIDs.push(_customerID);
         customerAges[_customerID] = _customerAge;
         customerCriminalRecords[_customerID] = _criminalRecord;
     }

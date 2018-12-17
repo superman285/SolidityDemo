@@ -3,11 +3,529 @@
 <head>
     <meta charset="UTF-8">
     <title>酒店管理</title>
+    <link rel="stylesheet" href="//cdnjs.loli.net/ajax/libs/mdui/0.4.2/css/mdui.min.css">
+    <script src="//cdnjs.loli.net/ajax/libs/mdui/0.4.2/js/mdui.min.js"></script>
+
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script src="js/web3.js"></script>
+
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        .wrap{
+            width: 100%;
+            height: 100vh;
+            background: url("img/bg.png");
+            background-size: cover;
+        }
+        @media only screen and (max-width: 600px){
+            .nav-wrapper img{
+                width: 56px!important;
+                height: 56px!important;
+            }
+        }
+        .nav-wrapper img{
+            width: 64px;
+            height: 64px;
+        }
+        .showcustomer {
+            margin-top: 5rem;
+        }
+        .check-input {
+            margin-top: 3rem;
+        }
+        .checkin {
+            margin-top: 1rem;
+        }
+        .mdui-btn {
+            color: #fff!important;
+        }
+        
+        .showIDs,.showresult {
+            font-weight: 500!important;
+            color: #000!important;
+            font-size: 1.4rem!important;
+        }
+
+    </style>
 </head>
 <body>
 
+    <div class="wrap">
+
+        <nav>
+            <div class="nav-wrapper">
+                <a href="#" class="brand-logo">
+                    <img src="img/hot.jpg" alt="">
+                </a>
+                <!--<ul id="nav-mobile" class="right hide-on-med-and-down">
+                    <li><a href="sass.html">Sass</a></li>
+                    <li><a href="badges.html">Components</a></li>
+                    <li><a href="collapsible.html">JavaScript</a></li>
+                </ul>-->
+            </div>
+        </nav>
 
 
+        <div class="showcustomer">
+        <button class="mdui-btn mdui-color-light-blue-500 mdui-ripple mdui-shadow-8">
+            <i class="mdui-icon mdui-icon-right material-icons">cloud</i>
+            查看客户ID
+        </button>
+        </div>
+        <!-- 禁用状态 -->
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <textarea class="showIDs mdui-textfield-input" disabled></textarea>
+        </div>
+
+
+
+        <div class="check-input mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">请输入客户ID</label>
+            <input class="mdui-textfield-input" type="email"/>
+        </div>
+
+        <div class="checkin">
+            <button class="mdui-btn mdui-color-light-blue-500 mdui-ripple mdui-shadow-8">
+                <i class="mdui-icon mdui-icon-right material-icons">warning</i>
+                入住确认
+            </button>
+        </div>
+
+        <!-- 禁用状态 -->
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <textarea class="showresult mdui-textfield-input" disabled></textarea>
+        </div>
+
+
+
+    </div>
+
+
+    <script>
+
+
+        let web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
+
+        let infoManage_abi = [
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "name": "_customerID",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "_customerName",
+                        "type": "string"
+                    },
+                    {
+                        "name": "_customerAge",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "_criminalRecord",
+                        "type": "bool"
+                    }
+                ],
+                "name": "entryInfo",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "Administrator",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerID",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "isAdult_ID",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerSerialNum",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getAgeInfo",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerSerialNum",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getDetailInfoFromSerial",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "",
+                        "type": "string"
+                    },
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerID",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "isCriminal_ID",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerSerialNum",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "isAdult_Serial",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerID",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getDetailInfoFromID",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "",
+                        "type": "string"
+                    },
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerSerialNum",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "isCriminal_Serial",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "getCustomerNum",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerSerialNum",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getCriminalRecordInfo",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "getCustomerIDs",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256[]"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            }
+        ];
+        let hotelCheck_abi = [
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "showCustomerIDs",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256[]"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerSerialNum",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "checkInSerial",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "name": "_addr",
+                        "type": "address"
+                    }
+                ],
+                "name": "getInfoContract",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [
+                    {
+                        "name": "_customerID",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "checkInID",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+        //合约地址-创建合约时获得
+        let infoManage_addr = "0xf95b7b6eec7fd61a2ec70fed82ec38e6db17252d";
+        let hotelCheck_addr = "0xb88ef0259b5075846f6846d2e3cb7007978fd4cf";
+
+        //2. 通过合约地址以及合约的abi获得合约实例
+        infoManage_instance = new web3.eth.Contract(infoManage_abi, infoManage_addr);
+        hotelCheck_instance = new web3.eth.Contract(hotelCheck_abi, hotelCheck_addr);
+
+        let check_input = document.querySelector(".check-input input");
+
+        let showIDs = document.querySelector(".showIDs");
+        let textshow = document.querySelector(".showresult");
+        console.log(textshow);
+
+        let showID_btn = document.querySelector(".showcustomer button");
+        showID_btn.onclick = ()=>{
+            console.log(this);
+            //showIDs.value = 12313;
+
+            hotelCheck_instance.methods.getInfoContract(infoManage_addr).send({
+                from: "0x2b9579b9eb65dbc6a10a3d27fc8aba8f615bb0be",
+                gas: 400000
+            },(err,result)=>{
+                if (!err) {
+                    console.log("成功获取了合约实例");
+                }else{
+                    console.log("获取合约实例failed");
+                }
+            }).then(hotelCheck_instance.methods.showCustomerIDs().call((err,result)=>{
+                if (!err) {
+                    console.log("成功获取IDs");
+                    showIDs.value = result;
+                }else {
+                    console.log("没获取到客户ID群");
+                    mdui.snackbar({
+                        message: '获取客户ID群失败！',
+                        position: 'bottom'
+                    });
+                }
+            }));
+
+        };
+
+
+        let checkin_btn = document.querySelector(".checkin button");
+        checkin_btn.onclick = function(){
+            console.log(this);
+            if (!check_input.value) {
+                console.log(check_input.value);
+                mdui.snackbar({
+                    message: '还没输入客户ID呢！',
+                    position: 'left-top'
+                });
+            }else {
+                hotelCheck_instance.methods.getInfoContract(infoManage_addr).send({
+                    from: "0x2b9579b9eb65dbc6a10a3d27fc8aba8f615bb0be",
+                    gas: 400000
+                },(err,result)=>{
+                    if (!err) {
+                        console.log("成功获取了合约实例");
+                    }else{
+                        console.log("获取合约实例failed");
+                    }
+                }).then(hotelCheck_instance.methods.checkInID(check_input.value).call((err,result)=>{
+
+                    if (!err) {
+                        console.log("获取到了结果");
+                        textshow.value = result;
+                    }else {
+                        console.log("没能获取到结果");
+                        mdui.snackbar({
+                            message: '获取结果失败！',
+                            position: 'bottom'
+                        });
+                    }
+
+                }))
+            }
+        }
+
+
+
+    </script>
 
 
 </body>
