@@ -1,4 +1,5 @@
 pragma solidity >=0.5.0 <0.6;
+
 contract Gambling {
 
 
@@ -28,7 +29,7 @@ contract Gambling {
         isFinished = false;
         nowTime = now;
     }
-
+    
     function getBalance() public view returns (uint) {
         return address(this).balance;
     }
