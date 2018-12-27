@@ -3,7 +3,8 @@
 第二个协程将得到的数字平方后传递给第三个协程，第三个协程负责打印得到的数字。
 */
 
-var async = require('async');
+const async = require('async');
+console.log(async);
 
 var inputNum=[],
     inputNumSquare=[];
