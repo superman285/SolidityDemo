@@ -42,7 +42,7 @@ contract DrawLots {
     }
 
     //索引0到5元素对应队伍如下，
-    string[] randArr = ["A", "A", "B", "B", "C", "C"];
+    string[] public randArr = ["A", "A", "B", "B", "C", "C"];
     //抽签分组，每次抽完一签干掉这个号，下次再从剩下的里头随机，保证不会超过组人数上限
     function subgroup() public{
         require(teamsNum.length == 6,"凑够6组才可以开始分组");
@@ -61,7 +61,10 @@ contract DrawLots {
             teams[msg.sender].inGroup = "groupC";
         }
         teams[msg.sender].hasBalloted = true;//抽签标记置为真
-        deleteArrAt(random);
+        
+        
+        //or deleteArrAt(random)
+        deleteArrAt2(random,randArr);
     }
 
     modifier groupFull() {
@@ -91,6 +94,19 @@ contract DrawLots {
         //删除末尾元素，但是实际只是置0，还需要改变长度
         delete randArr[len - 1];
         randArr.length--;
+    }
+    
+    //删除指定索引数组元素
+    //此处要为storage，否则修改不会影响到原数组
+    function deleteArrAt2(uint _index,string[] storage _arr) private{
+        uint len = _arr.length;
+        require(_index < len, "错误！索引超限了！");
+        for (uint i = _index; i < len - 1; i++) {
+            _arr[i] = _arr[i + 1];
+        }
+        //删除末尾元素，但是实际只是置0，还需要改变长度
+        delete _arr[len - 1];
+        _arr.length--;
     }
 
 }
