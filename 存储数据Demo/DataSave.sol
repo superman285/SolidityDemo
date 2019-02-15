@@ -73,15 +73,14 @@ contract DataSave {
                 userNotes[myuid][i].text = newtext;
             }
         }
-        
     }
     
-    function deleteNote(uint noteid) private {
+    function deleteNote(uint noteid) public {
         //涉及到noteid的数据都处理下
-        delete notesContent[noteid-1];
-        delete notesMap[noteid-1];
+        delete notesContent[noteid];
+        delete notesMap[noteid];
         //notesMap[noteid-1]的内容会被置为''空
-        delete noteidTouid[noteid-1];
+        delete noteidTouid[noteid];
 
         //删除结构体，则把这个Note实例中的三个字段都置为0和空串
         delete notesArr[noteid-1];
