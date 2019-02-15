@@ -18,6 +18,13 @@ contract DataSave {
     //一个uid对应的Note数组(多个Note)
     //在remix查看时可输两个参数，第一个为uid，第二个为对应数组的索引值，不输入则索引为0
     mapping(uint=>Note[]) public userNotes;
+    
+    //uid's noteid=>arrindex
+    //!!!神来之笔!!!
+    //利用特定用户uid的 找出全局noteid对应的自己的userNotes的数组的索引 两者的对应关系
+    //有了这个对应关系，就不用循环来找哪个索引的noteid等于入参noteid了，good!
+    mapping(uint=>mapping(uint=>uint)) public noteidToindex; 
+    
      //所有note的集合数组
     Note[] public notesArr;
     
@@ -39,11 +46,13 @@ contract DataSave {
 
     function getMyNotes() public view returns(Note[] memory){
         uint myuid = uint(msg.sender);
+        
         return userNotes[myuid];
+        
     }
     
-    function checkNote(uint noteid) public view returns(Note memory) {
-        
+    function getNote(uint noteid) public view returns(Note memory) {
+        return notesMap[noteid];
     }
     
     function addNote(string memory text) public{
@@ -58,7 +67,10 @@ contract DataSave {
         notesContent[noteid] = text;
         notesMap[noteid] = newNote;
         notesArr.push(newNote);
-        userNotes[myuid].push(newNote);
+        
+        uint userNotesLen = userNotes[myuid].push(newNote);
+        noteidToindex[myuid][noteid] = userNotesLen - 1;
+        
     }
     
     function updateNote(uint noteid,string memory newtext) public {
@@ -68,11 +80,14 @@ contract DataSave {
         notesArr[noteid-1].text = newtext;
         
         uint myuid = uint(msg.sender);
-        for(uint i=0;i<userNotes[myuid].length;i++){
+        /*for(uint i=0;i<userNotes[myuid].length;i++){
             if(userNotes[myuid][i].noteid == noteid){
                 userNotes[myuid][i].text = newtext;
             }
-        }
+        }*/
+        uint correctIndex = noteidToindex[myuid][noteid];
+        userNotes[myuid][correctIndex].text = newtext;
+        
     }
     
     function deleteNote(uint noteid) public {
@@ -90,11 +105,14 @@ contract DataSave {
         
         uint myuid = uint(msg.sender);
         //若user对应的Notes数组中的Note的noteid与参数noteid相等，则删除这个note
-        for(uint i=0;i<userNotes[myuid].length;i++){
+        /*for(uint i=0;i<userNotes[myuid].length;i++){
             if(userNotes[myuid][i].noteid == noteid){
                 delete userNotes[myuid][i];
             }
-        }
+        }*/
+        
+        uint correctIndex = noteidToindex[myuid][noteid];
+        delete userNotes[myuid][correctIndex];
         
     }
 
