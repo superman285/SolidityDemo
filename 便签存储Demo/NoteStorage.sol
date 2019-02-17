@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6;
 pragma experimental ABIEncoderV2;
 
-contract DataSave {
+contract NoteStorage {
 
     struct Note {
         uint uid;
@@ -27,7 +27,8 @@ contract DataSave {
     
      //所有note的集合数组
     Note[] public notesArr;
-    
+
+    //实际上是noteNums 即note数量
     uint public noteIdx;
     address public founder;
     uint public founderID;
@@ -46,9 +47,7 @@ contract DataSave {
 
     function getMyNotes() public view returns(Note[] memory){
         uint myuid = uint(msg.sender);
-        
         return userNotes[myuid];
-        
     }
     
     function getNote(uint noteid) public view returns(Note memory) {
@@ -80,6 +79,7 @@ contract DataSave {
         notesArr[noteid-1].text = newtext;
         
         uint myuid = uint(msg.sender);
+        //性能较差，浪费gas的方法，循环
         /*for(uint i=0;i<userNotes[myuid].length;i++){
             if(userNotes[myuid][i].noteid == noteid){
                 userNotes[myuid][i].text = newtext;
@@ -87,10 +87,10 @@ contract DataSave {
         }*/
         uint correctIndex = noteidToindex[myuid][noteid];
         userNotes[myuid][correctIndex].text = newtext;
-        
     }
     
     function deleteNote(uint noteid) public {
+        require(uint(msg.sender) == noteidTouid[noteid],"you can only delete the note belong to you!");
         //涉及到noteid的数据都处理下
         delete notesContent[noteid];
         delete notesMap[noteid];
@@ -104,6 +104,7 @@ contract DataSave {
         //or noteidTouid[noteid]=0;
         
         uint myuid = uint(msg.sender);
+        //性能较差，浪费gas的方法，循环
         //若user对应的Notes数组中的Note的noteid与参数noteid相等，则删除这个note
         /*for(uint i=0;i<userNotes[myuid].length;i++){
             if(userNotes[myuid][i].noteid == noteid){
@@ -113,7 +114,5 @@ contract DataSave {
         
         uint correctIndex = noteidToindex[myuid][noteid];
         delete userNotes[myuid][correctIndex];
-        
     }
-
 }
