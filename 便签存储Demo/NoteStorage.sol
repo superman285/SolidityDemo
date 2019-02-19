@@ -18,13 +18,13 @@ contract NoteStorage {
     //一个uid对应的Note数组(多个Note)
     //在remix查看时可输两个参数，第一个为uid，第二个为对应数组的索引值，不输入则索引为0
     mapping(uint=>Note[]) public userNotes;
-    
+
     //uid's noteid=>arrindex
     //!!!神来之笔!!!
     //利用特定用户uid的 找出全局noteid对应的自己的userNotes的数组的索引 两者的对应关系
     //有了这个对应关系，就不用循环来找哪个索引的noteid等于入参noteid了，good!
-    mapping(uint=>mapping(uint=>uint)) public noteidToindex; 
-    
+    mapping(uint=>mapping(uint=>uint)) public noteidToindex;
+
      //所有note的集合数组
     Note[] public notesArr;
 
@@ -39,7 +39,7 @@ contract NoteStorage {
         founder = msg.sender;
         founderID = uint(founder);
     }
-    
+
     function getAllNotes() public view returns(Note[] memory){
         return notesArr;
         //前端获取到了后判断下 如果都Note中字段都空 就不初始化这个便签
@@ -49,11 +49,11 @@ contract NoteStorage {
         uint myuid = uint(msg.sender);
         return userNotes[myuid];
     }
-    
+
     function getNote(uint noteid) public view returns(Note memory) {
         return notesMap[noteid];
     }
-    
+
     function addNote(string memory text) public{
         uint myuid = uint(msg.sender);
         uint noteid = ++noteIdx;
@@ -66,18 +66,18 @@ contract NoteStorage {
         notesContent[noteid] = text;
         notesMap[noteid] = newNote;
         notesArr.push(newNote);
-        
+
         uint userNotesLen = userNotes[myuid].push(newNote);
         noteidToindex[myuid][noteid] = userNotesLen - 1;
-        
+
     }
-    
+
     function updateNote(uint noteid,string memory newtext) public {
         require(uint(msg.sender) == noteidTouid[noteid],"you can only change the note belong to you!");
         notesContent[noteid] = newtext;
         notesMap[noteid].text = newtext;
         notesArr[noteid-1].text = newtext;
-        
+
         uint myuid = uint(msg.sender);
         //性能较差，浪费gas的方法，循环
         /*for(uint i=0;i<userNotes[myuid].length;i++){
@@ -88,7 +88,7 @@ contract NoteStorage {
         uint correctIndex = noteidToindex[myuid][noteid];
         userNotes[myuid][correctIndex].text = newtext;
     }
-    
+
     function deleteNote(uint noteid) public {
         require(uint(msg.sender) == noteidTouid[noteid],"you can only delete the note belong to you!");
         //涉及到noteid的数据都处理下
@@ -99,10 +99,10 @@ contract NoteStorage {
 
         //删除结构体，则把这个Note实例中的三个字段都置为0和空串
         delete notesArr[noteid-1];
-        
+
         delete noteidTouid[noteid];
         //or noteidTouid[noteid]=0;
-        
+
         uint myuid = uint(msg.sender);
         //性能较差，浪费gas的方法，循环
         //若user对应的Notes数组中的Note的noteid与参数noteid相等，则删除这个note
@@ -111,7 +111,7 @@ contract NoteStorage {
                 delete userNotes[myuid][i];
             }
         }*/
-        
+
         uint correctIndex = noteidToindex[myuid][noteid];
         delete userNotes[myuid][correctIndex];
     }
