@@ -71,7 +71,7 @@ contract kccToken is ERC20 {
     function transfer(address _to, uint _value) public returns (bool success){
 
         require(balance[msg.sender] >= _value, "余额需大于等于转账额");
-        require(balance[msg.sender] + _value > balance[msg.sender], "溢出了");
+        require(balance[_to] + _value > balance[_to], "溢出了");
         require(_to != address(0), "转账对象地址不能为空！");
         balance[msg.sender] -= _value;
         balance[_to] += _value;
@@ -79,7 +79,10 @@ contract kccToken is ERC20 {
         return true;
 
         //_balance[_from]>=_value
-        // 溢出检查 _balance[_from]+_value > _balance[_from] 既保证了value必须为正，也避免两个超大数加起来成为负值
+        // 溢出检查 _balance[_to]+_value > _balance[_to] 既保证了value必须为正，也避免两个超大数加起来成为一个较小的数 越界后的值从最左侧开始
+
+        //注意：因为计算的是balance[_to]+value 防止这个和溢出 所以判断的应当是 balance[_to]+_value而不是balance[msg.sender]+_value
+
         //_to!=address(0)
 
         //减钱
@@ -94,9 +97,9 @@ contract kccToken is ERC20 {
         require(balance[_from] >= _value, "余额需大于等于转账额");
         require(balance[msg.sender] + _value > balance[msg.sender], "溢出了");
         require(_to != address(0), "转账对象地址不能为空！");
-        require(_value <= allowance[_from][_to], "转账额需小于等于配额");
+        require(_value <= allowance[_from][msg.sender], "转账额需小于等于配额");
 
-        allowance[_from][_to] -= _value;
+        allowance[_from][msg.sender] -= _value;
         balance[_to] += _value;
         balance[_from] -= _value;
 
@@ -116,6 +119,8 @@ contract kccToken is ERC20 {
     function approve(address _spender, uint _value) public returns (bool success){
 
         require(balance[msg.sender] >= _value, "余额需大于等于转账额");
+
+        //此处没做运算 其实不需要判
         require(balance[msg.sender] + _value > balance[msg.sender], "溢出了");
         require(_spender != address(0), "转账对象地址不能为空！");
 
