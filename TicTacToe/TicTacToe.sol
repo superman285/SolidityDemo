@@ -20,6 +20,10 @@ contract TicTacToe {
     //"O"(host) or "X"(guest)
     mapping(address => string) public playerChess;
     mapping(address => uint8) public movesCount;
+
+    event PlayerJoined(address playerAddr);
+    event ActivePlayer(address playerAddr);
+    event GameFinished(string gameResult);
     
     constructor() payable public{
         hostPlayer = msg.sender;
@@ -35,6 +39,7 @@ contract TicTacToe {
         require(msg.sender != hostPlayer, "gameCreator cannot join the game");
         require(guestPlayer == address(0), "guestPlayer already exist");
         guestPlayer = msg.sender;
+        emit PlayerJoined(guestPlayer);
         //启动游戏
         gameRunning = true;
         playerChess[guestPlayer] = "X";
@@ -43,12 +48,13 @@ contract TicTacToe {
         }else if(randomStart()==guestPlayer){
             activePlayer = guestPlayer;
         }
+        emit ActivePlayer(activePlayer);
     }
 
     //前端怎么判断谁先开始,处理成返回值吧?或者谁先开始由前端随机?
     //若前端随机还需要传给智能合约设置activeplayer又需要用户等待时间 还是智能合约处理吧
     function randomStart() private view returns(address) {
-        uint rand = uint(keccak256(abi.encodePacked(now, hostPlayer, guestPlayer))) % 2;
+        uint rand = uint(keccak256(abi.encodePacked(now, block.number))) % 2;
         if (rand == 0) {
             return hostPlayer;
         } else {
@@ -115,7 +121,8 @@ contract TicTacToe {
         }else{
             gameResult="guestVictory";
         }
-        //emit event
+
+        emit GameFinished(gameResult);
         //发奖
     }
 
@@ -123,7 +130,8 @@ contract TicTacToe {
         gameRunning = false;
         delete activePlayer;
         gameResult = "tie";
-        //emit event
+
+        emit GameFinished(gameResult);
         //平局发奖
     }
 
@@ -212,7 +220,6 @@ contract TicTacToe {
         } else if (activePlayer == guestPlayer) {
             activePlayer = hostPlayer;
         }
+        emit ActivePlayer(activePlayer);
     }
-
-
 }
