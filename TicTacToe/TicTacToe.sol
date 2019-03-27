@@ -13,7 +13,6 @@ contract TicTacToe {
     address public victorPlayer;
 
     bool private gameRunning;
-    bool private gameCreated;
 
     uint8 private chessboardSize = 3;
     string[3][3] private chessboard;
@@ -29,24 +28,19 @@ contract TicTacToe {
     event GameFinished(string gameResult, address victor);
     event VictoryAward(address receiver, uint amount);
 
-    constructor() public{
+    constructor() public payable{
+        require(msg.value == gameCost, "creator must send gameCost to create the game");
         gameRunning = false;
+        hostPlayer = msg.sender;
+        playerChess[hostPlayer] = "O";
+        emit GameCreated(hostPlayer);
     }
 
     function getWholeBoard() public view returns (string[3][3] memory){
         return chessboard;
     }
 
-    function createGame() public payable {
-        require(msg.value == gameCost, "creator must send gameCost to create the game");
-        hostPlayer = msg.sender;
-        gameCreated = true;
-        playerChess[hostPlayer] = "O";
-        emit GameCreated(hostPlayer);
-    }
-
     function joinGame() public payable {
-        require(gameCreated,"game must be created first!");
         require(msg.sender != hostPlayer, "gameCreator cannot join the game");
         require(guestPlayer == address(0), "guestPlayer already exist");
         require(msg.value == gameCost, "gameJoiner must send gameCost to the contract");
@@ -96,6 +90,8 @@ contract TicTacToe {
         //上局赢家置空
         delete victorPlayer;
         delete gameResult;
+
+        emit GameCreated(hostPlayer);
     }
 
     function getBonuspool() public view returns (uint){
