@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <=0.6.0;
 pragma experimental ABIEncoderV2;
 
-import "./Console.sol";
+//import "./Console.sol";
 
 contract TicTacToe {
 
@@ -12,36 +12,41 @@ contract TicTacToe {
     address payable public activePlayer;
     address public victorPlayer;
 
-    bool public gameRunning;
+    bool private gameRunning;
+    bool private gameCreated;
 
+    uint8 private chessboardSize = 3;
+    string[3][3] private chessboard;
+    //"O"(host) or "X"(guest)
+    mapping(address => string) private playerChess;
+    mapping(address => uint8) private movesCount;
 
     string public gameResult;
 
-    uint8 public chessboardSize = 3;
-    string[3][3] public chessboard;
-
-    //"O"(host) or "X"(guest)
-    mapping(address => string) public playerChess;
-    mapping(address => uint8) public movesCount;
-
+    event GameCreated(address creatorAddr);
     event PlayerJoined(address playerAddr);
-    event ActivePlayer(address playerAddr);
+    event ActivePlayer(address activePlayerAddr);
     event GameFinished(string gameResult, address victor);
     event VictoryAward(address receiver, uint amount);
 
-    constructor() public payable{
-        require(msg.value == gameCost, "creator must send gameCost to the contract!");
-        hostPlayer = msg.sender;
+    constructor() public{
         gameRunning = false;
-        playerChess[hostPlayer] = "O";
     }
 
     function getWholeBoard() public view returns (string[3][3] memory){
-
         return chessboard;
     }
 
+    function createGame() public payable {
+        require(msg.value == gameCost, "creator must send gameCost to create the game");
+        hostPlayer = msg.sender;
+        gameCreated = true;
+        playerChess[hostPlayer] = "O";
+        emit GameCreated(hostPlayer);
+    }
+
     function joinGame() public payable {
+        require(gameCreated,"game must be created first!");
         require(msg.sender != hostPlayer, "gameCreator cannot join the game");
         require(guestPlayer == address(0), "guestPlayer already exist");
         require(msg.value == gameCost, "gameJoiner must send gameCost to the contract");
@@ -115,7 +120,7 @@ contract TicTacToe {
 
         //优化下，至少5步才需要结算胜负
         if ((movesCount[hostPlayer] + movesCount[guestPlayer]) >= (chessboardSize * 2 - 1)) {
-            Console.log("settle", now);
+            //Console.log("settle", now);
             settleStage(row, column);
         }
 
@@ -137,6 +142,7 @@ contract TicTacToe {
         delete activePlayer;
         emit GameFinished(gameResult, player);
         //发奖
+        emit VictoryAward(player,address(this).balance);
         player.transfer(address(this).balance);
     }
 
@@ -156,7 +162,7 @@ contract TicTacToe {
     //结算阶段
     function settleStage(uint8 player_row, uint8 player_column) private {
         //玩家所在列 达到3个
-        Console.log("firstJudge", now);
+        //Console.log("firstJudge", now);
         //uint8 row_count = 0;
         for ((uint8 row, uint8 row_count) = (0,0); row < chessboardSize; row++) {
             if (keccak256(abi.encodePacked(chessboard[row][player_column])) == keccak256(abi.encodePacked(playerChess[activePlayer]))) {
@@ -171,7 +177,7 @@ contract TicTacToe {
             }
         }
 
-        Console.log("secondJudge", now);
+        //Console.log("secondJudge", now);
         //玩家所在行达到3个
         //uint8 column_count = 0;
         for ((uint8 column, uint8 column_count) = (0,0); column < chessboardSize; column++) {
@@ -187,7 +193,7 @@ contract TicTacToe {
             }
         }
 
-        Console.log("thirdJudge", now);
+        //Console.log("thirdJudge", now);
         //玩家不在上下左右四个位置 就判对角线
         if (keccak256(abi.encodePacked(chessboard[0][1])) != keccak256(abi.encodePacked(playerChess[activePlayer])) &&
         keccak256(abi.encodePacked(chessboard[1][0])) != keccak256(abi.encodePacked(playerChess[activePlayer])) &&
@@ -241,3 +247,4 @@ contract TicTacToe {
         emit ActivePlayer(activePlayer);
     }
 }
+
